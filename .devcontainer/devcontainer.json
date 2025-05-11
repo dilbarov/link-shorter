@@ -1,0 +1,13 @@
+{
+  "name": "Дштл Ырщкеук",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.21"
+    }
+  },
+  "workspaceFolder": "/workspace",
+  "remoteUser": "vscode"
+}
