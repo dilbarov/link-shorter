@@ -1,5 +1,5 @@
 {
-  "name": "Дштл Ырщкеук",
+  "name": "Link Shorter",
   "build": {
     "dockerfile": "Dockerfile"
   },
