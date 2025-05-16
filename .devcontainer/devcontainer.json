@@ -8,6 +8,8 @@
       "version": "1.23"
     }
   },
+  "forwardPorts": [8081],
   "workspaceFolder": "/workspace",
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+  "postStartCommand": "air"
 }
