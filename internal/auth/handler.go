@@ -1,26 +1,35 @@
 package auth
 
 import (
-	"fmt"
+	"link-shorter/configs"
+	"log"
 	"net/http"
 )
 
-type Handler struct{}
+type HandlerDeps struct {
+	*configs.Config
+}
+
+type Handler struct {
+	*configs.Config
+}
+
+func NewHandler(router *http.ServeMux, deps HandlerDeps) {
+	handler := &Handler{
+		Config: deps.Config,
+	}
+	router.HandleFunc("POST /auth/login", handler.Login())
+	router.HandleFunc("POST /auth/register", handler.Register())
+}
 
 func (h *Handler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("auth")
+		log.Printf("auth")
 	}
 }
 
 func (h *Handler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("register")
+		log.Printf("register")
 	}
-}
-
-func NewHandler(router *http.ServeMux) {
-	handler := &Handler{}
-	router.HandleFunc("POST /auth/login", handler.Login())
-	router.HandleFunc("POST /auth/register", handler.Register())
 }

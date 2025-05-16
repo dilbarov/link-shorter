@@ -13,7 +13,9 @@ func main() {
 	conf := configs.LoadConfig()
 
 	router := http.NewServeMux()
-	auth.NewHandler(router)
+	auth.NewHandler(router, auth.HandlerDeps{
+		Config: conf,
+	})
 
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.App.Port),
