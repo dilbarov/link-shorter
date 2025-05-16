@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"link-shorter/configs"
 	"link-shorter/internal/auth"
 	"net/http"
 )
 
 func main() {
-	conf := configs.LoadConfig()
+	//conf := configs.LoadConfig()
 
 	router := http.NewServeMux()
 	auth.NewHandler(router)
