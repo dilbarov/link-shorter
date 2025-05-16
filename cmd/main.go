@@ -1,25 +1,31 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"link-shorter/configs"
 	"link-shorter/internal/auth"
+	"link-shorter/pkg/shutdown"
 	"net/http"
 )
 
 func main() {
-	//conf := configs.LoadConfig()
+	conf := configs.LoadConfig()
 
 	router := http.NewServeMux()
 	auth.NewHandler(router)
 
 	server := http.Server{
-		Addr:    ":8081",
+		Addr:    fmt.Sprintf(":%d", conf.App.Port),
 		Handler: router,
 	}
 
-	fmt.Println("Starting server on port 8081")
-	err := server.ListenAndServe()
-	if err != nil {
-		return
-	}
+	go func() {
+		fmt.Printf("Starting server on port %d\n", conf.App.Port)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			fmt.Printf("ListenAndServe error: %v\n", err)
+		}
+	}()
+
+	shutdown.WaitForShutdown(&server)
 }
