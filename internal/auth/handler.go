@@ -33,6 +33,18 @@ func (h *Handler) Login() http.HandlerFunc {
 			return
 		}
 
+		log.Printf("%s", payload.Password)
+
+		if payload.Email == "" {
+			res.Json(w, "email is empty", 400)
+			return
+		}
+
+		if payload.Password == "" {
+			res.Json(w, "password is empty", 400)
+			return
+		}
+
 		res.Json(w, &LoginResponse{
 			Token: "123",
 		}, 200)
