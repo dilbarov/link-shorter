@@ -1,0 +1,21 @@
+services:
+  db:
+    deploy:
+      resources:
+        limits:
+          memory: 150M
+        reservations:
+          memory: 100M
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=link-shorter
+    volumes:
+      - ./volumes/db:/data/postgres
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: "pg_isready --username=postgres --dbname=shorter"
+      interval: 10s
+      retries: 5
