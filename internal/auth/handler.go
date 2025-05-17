@@ -6,6 +6,8 @@ import (
 	"link-shorter/pkg/res"
 	"log"
 	"net/http"
+	"net/mail"
+	"regexp"
 )
 
 type HandlerDeps struct {
@@ -38,6 +40,19 @@ func (h *Handler) Login() http.HandlerFunc {
 		if payload.Email == "" {
 			res.Json(w, "email is empty", 400)
 			return
+		}
+
+		match, _ := regexp.MatchString(`[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}`, payload.Email)
+
+		if !match {
+			res.Json(w, "email is invalid", 400)
+			return
+		}
+
+		_, err = mail.ParseAddress(payload.Email)
+
+		if err != nil {
+			res.Json(w, "email is invalid", 400)
 		}
 
 		if payload.Password == "" {
