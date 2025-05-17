@@ -4,7 +4,6 @@ import (
 	"link-shorter/configs"
 	"link-shorter/pkg/req"
 	"link-shorter/pkg/res"
-	"log"
 	"net/http"
 )
 
@@ -40,7 +39,16 @@ func (h *Handler) Login() http.HandlerFunc {
 }
 
 func (h *Handler) Register() http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		log.Printf("register")
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := req.HandleBody[RegisterRequest](r.Body)
+
+		if err != nil {
+			res.Json(w, err.Error(), 400)
+			return
+		}
+
+		res.Json(w, &RegisterResponse{
+			Token: "123",
+		}, 200)
 	}
 }
