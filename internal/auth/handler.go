@@ -1,9 +1,8 @@
 package auth
 
 import (
-	"encoding/json"
-	"github.com/go-playground/validator/v10"
 	"link-shorter/configs"
+	"link-shorter/pkg/req"
 	"link-shorter/pkg/res"
 	"log"
 	"net/http"
@@ -26,17 +25,9 @@ func NewHandler(router *http.ServeMux, deps HandlerDeps) {
 }
 
 func (h *Handler) Login() http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		var payload LoginRequest
-		err := json.NewDecoder(req.Body).Decode(&payload)
-		if err != nil {
-			res.Json(w, err.Error(), 400)
-			return
-		}
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := req.HandleBody[LoginRequest](r.Body)
 
-		log.Printf("%s", payload.Password)
-		validate := validator.New()
-		err = validate.Struct(&payload)
 		if err != nil {
 			res.Json(w, err.Error(), 400)
 			return
