@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"link-shorter/configs"
 	"link-shorter/pkg/res"
 	"log"
@@ -25,9 +26,15 @@ func NewHandler(router *http.ServeMux, deps HandlerDeps) {
 
 func (h *Handler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		log.Printf("auth")
+		var payload LoginRequest
+		err := json.NewDecoder(req.Body).Decode(&payload)
+		if err != nil {
+			res.Json(w, err.Error(), 400)
+			return
+		}
+
 		res.Json(w, &LoginResponse{
-			Token: "1233",
+			Token: "123",
 		}, 200)
 	}
 }
