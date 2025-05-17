@@ -13,7 +13,7 @@ import (
 func main() {
 	conf := configs.LoadConfig()
 
-	_ = db.NewDb(conf)
+	_ = db.NewDb(&conf.Db)
 
 	router := http.NewServeMux()
 	auth.NewHandler(router, auth.HandlerDeps{

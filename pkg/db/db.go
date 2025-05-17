@@ -10,8 +10,8 @@ type Db struct {
 	*gorm.DB
 }
 
-func NewDb(conf *configs.Config) *Db {
-	db, err := gorm.Open(postgres.Open(conf.Db.Dsn), &gorm.Config{})
+func NewDb(conf *configs.DbConfig) *Db {
+	db, err := gorm.Open(postgres.Open(conf.Dsn), &gorm.Config{})
 
 	if err != nil {
 		panic(err)
