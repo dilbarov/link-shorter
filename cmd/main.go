@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"link-shorter/configs"
 	"link-shorter/internal/auth"
+	"link-shorter/internal/link"
 	"link-shorter/pkg/db"
 	"link-shorter/pkg/shutdown"
 	"net/http"
@@ -16,7 +17,13 @@ func main() {
 	_ = db.NewDb(&conf.Db)
 
 	router := http.NewServeMux()
+
+	// Handler
 	auth.NewHandler(router, auth.HandlerDeps{
+		Config: conf,
+	})
+
+	link.NewHandler(router, link.HandlerDeps{
 		Config: conf,
 	})
 
