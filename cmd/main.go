@@ -3,18 +3,21 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"link-shorter/configs"
 	"link-shorter/internal/auth"
 	"link-shorter/internal/link/handlers"
 	"link-shorter/internal/link/repository"
 	"link-shorter/internal/link/services"
 	"link-shorter/pkg/db"
-	"log"
+	"link-shorter/pkg/logger"
 	"net/http"
 )
 
 func main() {
 	conf := configs.LoadConfig()
+
+	log.Logger = logger.SetupLogger(conf.App.Env)
 
 	database := db.NewDb(&conf.Db)
 
@@ -41,8 +44,8 @@ func main() {
 		Handler: router,
 	}
 
-	log.Printf("Starting server on port %d\n", conf.App.Port)
+	log.Info().Msgf("Starting server on port %d", conf.App.Port)
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Printf("ListenAndServe error: %v\n", err)
+		log.Error().Err(err).Msg("")
 	}
 }

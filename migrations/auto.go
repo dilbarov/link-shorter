@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/joho/godotenv"
+	"github.com/rs/zerolog/log"
 	"link-shorter/configs"
 	"link-shorter/internal/link/models"
 	"link-shorter/pkg/db"
-	"log"
 	"os"
 )
 
@@ -24,5 +24,5 @@ func main() {
 		return
 	}
 
-	log.Printf("Database migrated")
+	log.Info().Msg("Database migrated")
 }

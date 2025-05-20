@@ -2,7 +2,7 @@ package configs
 
 import (
 	"github.com/joho/godotenv"
-	"log"
+	"github.com/rs/zerolog/log"
 	"os"
 	"strconv"
 )
@@ -15,6 +15,7 @@ type Config struct {
 
 type AppConfig struct {
 	Port int
+	Env  string
 }
 
 type DbConfig struct {
@@ -28,7 +29,7 @@ type AuthConfig struct {
 func LoadConfig() *Config {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("Error loading .env file, using default config")
+		log.Error().Err(err).Msg("Error loading .env file, using default config")
 	}
 
 	portStr := os.Getenv("PORT")
@@ -38,7 +39,7 @@ func LoadConfig() *Config {
 
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
-		log.Printf("Invalid PORT value %q, fallback to 8080\n", portStr)
+		log.Error().Err(err).Msgf("Invalid PORT value %q, fallback to 8080\n", portStr)
 		port = 8080
 	}
 
@@ -51,6 +52,7 @@ func LoadConfig() *Config {
 		},
 		App: AppConfig{
 			Port: port,
+			Env:  os.Getenv("ENV"),
 		},
 	}
 }
