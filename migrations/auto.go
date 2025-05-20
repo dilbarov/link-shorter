@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/joho/godotenv"
 	"link-shorter/configs"
-	"link-shorter/internal/link"
+	"link-shorter/internal/link/models"
 	"link-shorter/pkg/db"
 	"log"
 	"os"
@@ -19,7 +19,7 @@ func main() {
 		Dsn: os.Getenv("DSN"),
 	})
 
-	err = dbManager.AutoMigrate(&link.Link{})
+	err = dbManager.AutoMigrate(&models.LinkModel{})
 	if err != nil {
 		return
 	}

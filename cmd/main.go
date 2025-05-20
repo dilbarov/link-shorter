@@ -5,26 +5,35 @@ import (
 	"fmt"
 	"link-shorter/configs"
 	"link-shorter/internal/auth"
-	"link-shorter/internal/link"
+	"link-shorter/internal/link/handlers"
+	"link-shorter/internal/link/repository"
+	"link-shorter/internal/link/services"
 	"link-shorter/pkg/db"
-	"link-shorter/pkg/shutdown"
+	"log"
 	"net/http"
 )
 
 func main() {
 	conf := configs.LoadConfig()
 
-	_ = db.NewDb(&conf.Db)
+	database := db.NewDb(&conf.Db)
 
 	router := http.NewServeMux()
+
+	// Repositories
+	linkRepository := repository.NewPostgresLinkRepository(database)
+
+	// Services
+	linkService := link.NewServiceFacade(linkRepository)
 
 	// Handler
 	auth.NewHandler(router, auth.HandlerDeps{
 		Config: conf,
 	})
 
-	link.NewHandler(router, link.HandlerDeps{
-		Config: conf,
+	handlers.NewLinkHandler(router, handlers.HandlerDeps{
+		Config:      conf,
+		LinkService: linkService,
 	})
 
 	server := http.Server{
@@ -32,12 +41,8 @@ func main() {
 		Handler: router,
 	}
 
-	go func() {
-		fmt.Printf("Starting server on port %d\n", conf.App.Port)
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			fmt.Printf("ListenAndServe error: %v\n", err)
-		}
-	}()
-
-	shutdown.WaitForShutdown(&server)
+	log.Printf("Starting server on port %d\n", conf.App.Port)
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Printf("ListenAndServe error: %v\n", err)
+	}
 }
