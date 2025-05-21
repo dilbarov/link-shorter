@@ -6,6 +6,7 @@ import (
 	"link-shorter/configs"
 	"link-shorter/internal/link/models"
 	"link-shorter/pkg/db"
+	"link-shorter/pkg/logger"
 	"os"
 )
 
@@ -14,6 +15,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	log.Logger = logger.SetupLogger(os.Getenv("Env"))
 
 	dbManager := db.NewDb(&configs.DbConfig{
 		Dsn: os.Getenv("DSN"),
