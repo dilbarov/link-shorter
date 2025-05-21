@@ -4,8 +4,9 @@ import (
 	"link-shorter/configs"
 	"link-shorter/internal/link/models"
 	"link-shorter/internal/link/payloads"
-	services "link-shorter/internal/link/services"
-	commands "link-shorter/internal/link/services/commands"
+	linkServices "link-shorter/internal/link/services"
+	linkCommands "link-shorter/internal/link/services/commands"
+	"link-shorter/internal/link/services/queries"
 	"link-shorter/pkg/req"
 	"link-shorter/pkg/res"
 	"net/http"
@@ -13,12 +14,12 @@ import (
 
 type HandlerDeps struct {
 	*configs.Config
-	LinkService *services.ServiceFacade
+	LinkService *linkServices.ServiceFacade
 }
 
 type Handler struct {
 	*configs.Config
-	LinkService *services.ServiceFacade
+	LinkService *linkServices.ServiceFacade
 }
 
 func NewLinkHandler(router *http.ServeMux, deps HandlerDeps) {
@@ -37,11 +38,22 @@ func NewLinkHandler(router *http.ServeMux, deps HandlerDeps) {
 
 func (handler *Handler) GoTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		hash := r.PathValue("hash")
 
-		res.Json(w, &models.LinkModel{
-			Url:  "",
-			Hash: "",
-		}, http.StatusOK)
+		query := queries.GetByHashQuery{
+			Params: &payloads.LinkGetByHashParams{
+				Hash: hash,
+			},
+		}
+
+		result, err := handler.LinkService.Queries.GetByHash.Execute(query)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		http.Redirect(w, r, result.Url, http.StatusTemporaryRedirect)
 	}
 }
 
@@ -57,11 +69,22 @@ func (handler *Handler) getAll() http.HandlerFunc {
 
 func (handler *Handler) getById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
 
-		res.Json(w, &models.LinkModel{
-			Url:  "",
-			Hash: "",
-		}, http.StatusOK)
+		query := queries.GetByIdQuery{
+			Params: &payloads.LinkGetByIDParams{
+				ID: id,
+			},
+		}
+
+		result, err := handler.LinkService.Queries.GetById.Execute(query)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		res.Json(w, &result, http.StatusOK)
 	}
 }
 
@@ -74,18 +97,18 @@ func (handler *Handler) Create() http.HandlerFunc {
 			return
 		}
 
-		cmd := commands.CreateCommand{
+		cmd := linkCommands.CreateCommand{
 			Payload: payload,
 		}
 
-		result, err := handler.LinkService.Commands.CreateHandler.Execute(cmd)
+		result, err := handler.LinkService.Commands.Create.Execute(cmd)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		res.Json(w, result, http.StatusCreated)
+		res.Json(w, &result, http.StatusCreated)
 	}
 }
 

@@ -15,6 +15,28 @@ func NewPostgresLinkRepository(database *db.Db) LinkRepository {
 	}
 }
 
+func (repo *PostgresLinkRepository) GetByHash(hash string) (*models.LinkModel, error) {
+	var link models.LinkModel
+	result := repo.Database.DB.First(&link, "hash = ?", hash)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &link, nil
+}
+
+func (repo *PostgresLinkRepository) GetById(id string) (*models.LinkModel, error) {
+	var link models.LinkModel
+	result := repo.Database.DB.First(&link, "id = ? AND deleted_at IS NULL", id)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &link, nil
+}
+
 func (repo *PostgresLinkRepository) Create(link *models.LinkModel) (*models.LinkModel, error) {
 	result := repo.Database.Create(link)
 

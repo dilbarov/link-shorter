@@ -3,6 +3,7 @@ package link
 import (
 	"link-shorter/internal/link/repository"
 	commands "link-shorter/internal/link/services/commands"
+	"link-shorter/internal/link/services/queries"
 )
 
 type ServiceFacade struct {
@@ -13,13 +14,20 @@ type ServiceFacade struct {
 func NewServiceFacade(repo repository.LinkRepository) *ServiceFacade {
 	return &ServiceFacade{
 		Commands: &CommandBus{
-			CreateHandler: &commands.CreateHandler{
+			Create: &commands.CreateCommandHandler{
 				LinkRepository: repo,
 			},
-			UpdateHandler: &commands.UpdateHandler{
-				Repo: repo,
+			Update: &commands.UpdateCommandHandler{
+				LinkRepository: repo,
 			},
 		},
-		Queries: &QueryBus{},
+		Queries: &QueryBus{
+			GetByHash: &queries.GetByHashQueryHandler{
+				LinkRepository: repo,
+			},
+			GetById: &queries.GetByIdQueryHandler{
+				LinkRepository: repo,
+			},
+		},
 	}
 }

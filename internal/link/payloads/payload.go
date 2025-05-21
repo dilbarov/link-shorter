@@ -1,5 +1,13 @@
 package payloads
 
+type LinkGetByHashParams struct {
+	Hash string
+}
+
+type LinkGetByIDParams struct {
+	ID string
+}
+
 type LinkCreateRequest struct {
 	Url string `json:"url" validate:"required,url"`
 }
