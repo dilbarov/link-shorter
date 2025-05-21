@@ -1,10 +1,10 @@
 package payloads
 
-type CreateLinkRequest struct {
-	Url string `json:"url"`
+type LinkCreateRequest struct {
+	Url string `json:"url" validate:"required,url"`
 }
 
-type UpdateLinkRequest struct {
+type LinkUpdateRequest struct {
 	Id  string `json:"id"`
 	Url string `json:"url"`
 }

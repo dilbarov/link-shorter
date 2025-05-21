@@ -14,7 +14,7 @@ func NewServiceFacade(repo repository.LinkRepository) *ServiceFacade {
 	return &ServiceFacade{
 		Commands: &CommandBus{
 			CreateHandler: &commands.CreateHandler{
-				Repo: repo,
+				LinkRepository: repo,
 			},
 			UpdateHandler: &commands.UpdateHandler{
 				Repo: repo,

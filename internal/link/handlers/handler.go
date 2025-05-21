@@ -29,7 +29,7 @@ func NewLinkHandler(router *http.ServeMux, deps HandlerDeps) {
 
 	router.HandleFunc("GET /link/", handler.getAll())
 	router.HandleFunc("GET /link/{id}", handler.getById())
-	router.HandleFunc("POST /link/{id}", handler.Create())
+	router.HandleFunc("POST /link", handler.Create())
 	router.HandleFunc("PATCH /link/{id}", handler.Update())
 	router.HandleFunc("DELETE /link/{id}", handler.Delete())
 	router.HandleFunc("GET /{hash}", handler.GoTo())
@@ -41,7 +41,7 @@ func (handler *Handler) GoTo() http.HandlerFunc {
 		res.Json(w, &models.LinkModel{
 			Url:  "",
 			Hash: "",
-		}, 200)
+		}, http.StatusOK)
 	}
 }
 
@@ -51,7 +51,7 @@ func (handler *Handler) getAll() http.HandlerFunc {
 		res.Json(w, &models.LinkModel{
 			Url:  "",
 			Hash: "",
-		}, 200)
+		}, http.StatusOK)
 	}
 }
 
@@ -61,16 +61,16 @@ func (handler *Handler) getById() http.HandlerFunc {
 		res.Json(w, &models.LinkModel{
 			Url:  "",
 			Hash: "",
-		}, 200)
+		}, http.StatusOK)
 	}
 }
 
 func (handler *Handler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload, err := req.HandleBody[payloads.CreateLinkRequest](r.Body)
+		payload, err := req.HandleBody[payloads.LinkCreateRequest](r.Body)
 
 		if err != nil {
-			res.Json(w, err.Error(), 400)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -78,25 +78,30 @@ func (handler *Handler) Create() http.HandlerFunc {
 			Payload: payload,
 		}
 
-		result, _ := handler.LinkService.Commands.CreateHandler.Execute(cmd)
+		result, err := handler.LinkService.Commands.CreateHandler.Execute(cmd)
 
-		res.Json(w, result, 200)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		res.Json(w, result, http.StatusCreated)
 	}
 }
 
 func (handler *Handler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := req.HandleBody[payloads.UpdateLinkRequest](r.Body)
+		_, err := req.HandleBody[payloads.LinkUpdateRequest](r.Body)
 
 		if err != nil {
-			res.Json(w, err.Error(), 400)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		res.Json(w, &models.LinkModel{
 			Url:  "",
 			Hash: "",
-		}, 200)
+		}, http.StatusOK)
 	}
 }
 
@@ -106,6 +111,6 @@ func (handler *Handler) Delete() http.HandlerFunc {
 		res.Json(w, &models.LinkModel{
 			Url:  "",
 			Hash: "",
-		}, 200)
+		}, http.StatusOK)
 	}
 }

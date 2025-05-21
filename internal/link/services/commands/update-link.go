@@ -7,7 +7,7 @@ import (
 )
 
 type UpdateCommand struct {
-	Payload *payloads.UpdateLinkRequest
+	Payload *payloads.LinkUpdateRequest
 }
 
 type UpdateHandler struct {
