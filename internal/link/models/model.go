@@ -1,18 +1,18 @@
-package models
+package link
 
 import (
-	"gorm.io/gorm"
+	"link-shorter/pkg/base"
 	"math/rand"
 )
 
-type LinkModel struct {
-	gorm.Model
+type Model struct {
+	base.Model
 	Url  string `json:"url"`
 	Hash string `json:"hash" gorm:"uniqueIndex"`
 }
 
-func NewLink(url string) *LinkModel {
-	return &LinkModel{
+func NewLink(url string) *Model {
+	return &Model{
 		Url:  url,
 		Hash: RandomStringRunes(10),
 	}

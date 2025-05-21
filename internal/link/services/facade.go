@@ -1,8 +1,8 @@
 package link
 
 import (
-	"link-shorter/internal/link/repository"
-	commands "link-shorter/internal/link/services/commands"
+	linkRepository "link-shorter/internal/link/repository"
+	linkCommands "link-shorter/internal/link/services/commands"
 	"link-shorter/internal/link/services/queries"
 )
 
@@ -11,13 +11,13 @@ type ServiceFacade struct {
 	Queries  *QueryBus
 }
 
-func NewServiceFacade(repo repository.LinkRepository) *ServiceFacade {
+func NewServiceFacade(repo linkRepository.Repository) *ServiceFacade {
 	return &ServiceFacade{
 		Commands: &CommandBus{
-			Create: &commands.CreateCommandHandler{
+			Create: &linkCommands.CreateCommandHandler{
 				LinkRepository: repo,
 			},
-			Update: &commands.UpdateCommandHandler{
+			Update: &linkCommands.UpdateCommandHandler{
 				LinkRepository: repo,
 			},
 		},

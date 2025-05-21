@@ -1,21 +1,21 @@
 package link
 
 import (
-	"link-shorter/internal/link/models"
-	"link-shorter/internal/link/payloads"
-	"link-shorter/internal/link/repository"
+	linkModels "link-shorter/internal/link/models"
+	linkPayloads "link-shorter/internal/link/payloads"
+	linkRepository "link-shorter/internal/link/repository"
 )
 
 type CreateCommand struct {
-	Payload *payloads.LinkCreateRequest
+	Payload *linkPayloads.CreateRequest
 }
 
 type CreateCommandHandler struct {
-	LinkRepository repository.LinkRepository
+	LinkRepository linkRepository.Repository
 }
 
-func (h *CreateCommandHandler) Execute(cmd CreateCommand) (*models.LinkModel, error) {
-	link := models.NewLink(cmd.Payload.Url)
+func (h *CreateCommandHandler) Execute(cmd CreateCommand) (*linkModels.Model, error) {
+	link := linkModels.NewLink(cmd.Payload.Url)
 	createdLink, err := h.LinkRepository.Create(link)
 	if err != nil {
 		return nil, err

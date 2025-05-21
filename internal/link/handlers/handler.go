@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"link-shorter/configs"
-	"link-shorter/internal/link/models"
-	"link-shorter/internal/link/payloads"
+	linkModels "link-shorter/internal/link/models"
+	linkPayloads "link-shorter/internal/link/payloads"
+	linkResponses "link-shorter/internal/link/responses"
 	linkServices "link-shorter/internal/link/services"
 	linkCommands "link-shorter/internal/link/services/commands"
 	"link-shorter/internal/link/services/queries"
@@ -41,7 +42,7 @@ func (handler *Handler) GoTo() http.HandlerFunc {
 		hash := r.PathValue("hash")
 
 		query := queries.GetByHashQuery{
-			Params: &payloads.LinkGetByHashParams{
+			Params: &linkPayloads.GetByHashParams{
 				Hash: hash,
 			},
 		}
@@ -60,7 +61,7 @@ func (handler *Handler) GoTo() http.HandlerFunc {
 func (handler *Handler) getAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		res.Json(w, &models.LinkModel{
+		res.Json(w, &linkModels.Model{
 			Url:  "",
 			Hash: "",
 		}, http.StatusOK)
@@ -72,7 +73,7 @@ func (handler *Handler) getById() http.HandlerFunc {
 		id := r.PathValue("id")
 
 		query := queries.GetByIdQuery{
-			Params: &payloads.LinkGetByIDParams{
+			Params: &linkPayloads.GetByIDParams{
 				ID: id,
 			},
 		}
@@ -84,13 +85,13 @@ func (handler *Handler) getById() http.HandlerFunc {
 			return
 		}
 
-		res.Json(w, &result, http.StatusOK)
+		res.Json(w, linkResponses.NewPublicResponse(result), http.StatusOK)
 	}
 }
 
 func (handler *Handler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload, err := req.HandleBody[payloads.LinkCreateRequest](r.Body)
+		payload, err := req.HandleBody[linkPayloads.CreateRequest](r.Body)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -108,20 +109,20 @@ func (handler *Handler) Create() http.HandlerFunc {
 			return
 		}
 
-		res.Json(w, &result, http.StatusCreated)
+		res.Json(w, linkResponses.NewPublicResponse(result), http.StatusCreated)
 	}
 }
 
 func (handler *Handler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := req.HandleBody[payloads.LinkUpdateRequest](r.Body)
+		_, err := req.HandleBody[linkPayloads.UpdateRequest](r.Body)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		res.Json(w, &models.LinkModel{
+		res.Json(w, &linkModels.Model{
 			Url:  "",
 			Hash: "",
 		}, http.StatusOK)
@@ -131,7 +132,7 @@ func (handler *Handler) Update() http.HandlerFunc {
 func (handler *Handler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		res.Json(w, &models.LinkModel{
+		res.Json(w, &linkModels.Model{
 			Url:  "",
 			Hash: "",
 		}, http.StatusOK)

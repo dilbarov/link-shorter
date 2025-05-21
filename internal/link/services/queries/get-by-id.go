@@ -1,20 +1,20 @@
 package queries
 
 import (
-	"link-shorter/internal/link/models"
-	"link-shorter/internal/link/payloads"
-	"link-shorter/internal/link/repository"
+	linkModels "link-shorter/internal/link/models"
+	linkPayloads "link-shorter/internal/link/payloads"
+	linkRepository "link-shorter/internal/link/repository"
 )
 
 type GetByIdQuery struct {
-	Params *payloads.LinkGetByIDParams
+	Params *linkPayloads.GetByIDParams
 }
 
 type GetByIdQueryHandler struct {
-	LinkRepository repository.LinkRepository
+	LinkRepository linkRepository.Repository
 }
 
-func (h *GetByIdQueryHandler) Execute(query GetByIdQuery) (*models.LinkModel, error) {
+func (h *GetByIdQueryHandler) Execute(query GetByIdQuery) (*linkModels.Model, error) {
 	link, err := h.LinkRepository.GetById(query.Params.ID)
 
 	if err != nil {

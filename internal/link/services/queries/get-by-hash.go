@@ -1,20 +1,20 @@
 package queries
 
 import (
-	"link-shorter/internal/link/models"
-	"link-shorter/internal/link/payloads"
-	"link-shorter/internal/link/repository"
+	linkModels "link-shorter/internal/link/models"
+	linkPayloads "link-shorter/internal/link/payloads"
+	linkRepository "link-shorter/internal/link/repository"
 )
 
 type GetByHashQuery struct {
-	Params *payloads.LinkGetByHashParams
+	Params *linkPayloads.GetByHashParams
 }
 
 type GetByHashQueryHandler struct {
-	LinkRepository repository.LinkRepository
+	LinkRepository linkRepository.Repository
 }
 
-func (h *GetByHashQueryHandler) Execute(query GetByHashQuery) (*models.LinkModel, error) {
+func (h *GetByHashQueryHandler) Execute(query GetByHashQuery) (*linkModels.Model, error) {
 	link, err := h.LinkRepository.GetByHash(query.Params.Hash)
 
 	if err != nil {

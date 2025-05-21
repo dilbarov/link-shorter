@@ -7,8 +7,8 @@ import (
 	"link-shorter/configs"
 	"link-shorter/internal/auth"
 	"link-shorter/internal/link/handlers"
-	"link-shorter/internal/link/repository"
-	"link-shorter/internal/link/services"
+	linkRepository "link-shorter/internal/link/repository"
+	linkServices "link-shorter/internal/link/services"
 	"link-shorter/pkg/db"
 	"link-shorter/pkg/logger"
 	"net/http"
@@ -24,10 +24,10 @@ func main() {
 	router := http.NewServeMux()
 
 	// Repositories
-	linkRepository := repository.NewPostgresLinkRepository(database)
+	linkRepo := linkRepository.NewPostgresLinkRepository(database)
 
 	// Services
-	linkService := link.NewServiceFacade(linkRepository)
+	linkService := linkServices.NewServiceFacade(linkRepo)
 
 	// Handler
 	auth.NewHandler(router, auth.HandlerDeps{
