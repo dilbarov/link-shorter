@@ -5,6 +5,6 @@ import (
 )
 
 type CommandBus struct {
-	CreateHandler *commands.CreateHandler
-	UpdateHandler *commands.UpdateHandler
+	Create *commands.CreateCommandHandler
+	Update *commands.UpdateCommandHandler
 }

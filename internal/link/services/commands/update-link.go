@@ -10,13 +10,13 @@ type UpdateCommand struct {
 	Payload *payloads.LinkUpdateRequest
 }
 
-type UpdateHandler struct {
-	Repo repository.LinkRepository
+type UpdateCommandHandler struct {
+	LinkRepository repository.LinkRepository
 }
 
-func (h *UpdateHandler) Execute(cmd UpdateCommand) (*models.LinkModel, error) {
+func (h *UpdateCommandHandler) Execute(cmd UpdateCommand) (*models.LinkModel, error) {
 	link := models.NewLink(cmd.Payload.Url)
-	result, err := h.Repo.Update(cmd.Payload.Id, link)
+	result, err := h.LinkRepository.Update(cmd.Payload.Id, link)
 	if err != nil {
 		return nil, err
 	}

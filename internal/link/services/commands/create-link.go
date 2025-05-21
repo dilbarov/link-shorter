@@ -10,11 +10,11 @@ type CreateCommand struct {
 	Payload *payloads.LinkCreateRequest
 }
 
-type CreateHandler struct {
+type CreateCommandHandler struct {
 	LinkRepository repository.LinkRepository
 }
 
-func (h *CreateHandler) Execute(cmd CreateCommand) (*models.LinkModel, error) {
+func (h *CreateCommandHandler) Execute(cmd CreateCommand) (*models.LinkModel, error) {
 	link := models.NewLink(cmd.Payload.Url)
 	createdLink, err := h.LinkRepository.Create(link)
 	if err != nil {
