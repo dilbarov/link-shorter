@@ -7,7 +7,7 @@ import (
 )
 
 type CreateCommand struct {
-	Payload *linkPayloads.CreateRequest
+	Payload *linkPayloads.CreatePayload
 }
 
 type CreateCommandHandler struct {

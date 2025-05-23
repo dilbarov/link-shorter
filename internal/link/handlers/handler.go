@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/google/uuid"
 	"link-shorter/configs"
 	linkModels "link-shorter/internal/link/models"
 	linkPayloads "link-shorter/internal/link/payloads"
@@ -91,7 +92,7 @@ func (handler *Handler) getById() http.HandlerFunc {
 
 func (handler *Handler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload, err := req.HandleBody[linkPayloads.CreateRequest](r.Body)
+		payload, err := req.HandleBody[linkPayloads.CreatePayload](r.Body)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -115,17 +116,36 @@ func (handler *Handler) Create() http.HandlerFunc {
 
 func (handler *Handler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := req.HandleBody[linkPayloads.UpdateRequest](r.Body)
+		id := r.PathValue("id")
+
+		if _, err := uuid.Parse(id); err != nil {
+			http.Error(w, "Invalid UUID", http.StatusBadRequest)
+			return
+		}
+
+		payload, err := req.HandleBody[linkPayloads.UpdateRequest](r.Body)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		res.Json(w, &linkModels.Model{
-			Url:  "",
-			Hash: "",
-		}, http.StatusOK)
+		cmd := linkCommands.UpdateCommand{
+			Payload: &linkPayloads.UpdatePayload{
+				Id:   id,
+				Url:  payload.Url,
+				Hash: payload.Hash,
+			},
+		}
+
+		result, err := handler.LinkService.Commands.Update.Execute(cmd)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		res.Json(w, linkResponses.NewPublicResponse(result), http.StatusOK)
 	}
 }
 

@@ -7,7 +7,7 @@ import (
 )
 
 type UpdateCommand struct {
-	Payload *linkPayloads.UpdateRequest
+	Payload *linkPayloads.UpdatePayload
 }
 
 type UpdateCommandHandler struct {
@@ -15,8 +15,25 @@ type UpdateCommandHandler struct {
 }
 
 func (h *UpdateCommandHandler) Execute(cmd UpdateCommand) (*linkModels.Model, error) {
-	link := linkModels.NewLink(cmd.Payload.Url)
-	result, err := h.LinkRepository.Update(cmd.Payload.Id, link)
+	link, err := h.LinkRepository.GetById(cmd.Payload.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if cmd.Payload.Hash != nil && *cmd.Payload.Hash != link.Hash {
+		link, err = h.LinkRepository.GetByHash(*cmd.Payload.Hash)
+		if link != nil {
+			return nil, err
+		}
+		link.Hash = *cmd.Payload.Hash
+	}
+
+	if cmd.Payload.Url != nil {
+		link.Url = *cmd.Payload.Url
+	}
+
+	result, err := h.LinkRepository.Update(link)
 	if err != nil {
 		return nil, err
 	}

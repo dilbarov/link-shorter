@@ -8,11 +8,17 @@ type GetByIDParams struct {
 	ID string
 }
 
-type CreateRequest struct {
+type CreatePayload struct {
 	Url string `json:"url" validate:"required,url"`
 }
 
+type UpdatePayload struct {
+	Id   string
+	Url  *string
+	Hash *string
+}
+
 type UpdateRequest struct {
-	Id  string `json:"id"`
-	Url string `json:"url"`
+	Url  *string `json:"url" validate:"omitempty,url"`
+	Hash *string `json:"hash" validate:"omitempty"`
 }
