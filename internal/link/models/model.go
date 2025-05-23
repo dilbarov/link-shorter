@@ -11,6 +11,10 @@ type Model struct {
 	Hash string `json:"hash" gorm:"uniqueIndex"`
 }
 
+func (*Model) TableName() string {
+	return "links"
+}
+
 func NewLink(url string) *Model {
 	link := &Model{Url: url}
 	link.GenerateHash()
