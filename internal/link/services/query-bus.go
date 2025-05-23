@@ -1,8 +1,8 @@
 package link
 
-import "link-shorter/internal/link/services/queries"
+import linkQueries "link-shorter/internal/link/services/queries"
 
 type QueryBus struct {
-	GetByHash *queries.GetByHashQueryHandler
-	GetById   *queries.GetByIdQueryHandler
+	GetByHash *linkQueries.GetByHashQueryHandler
+	GetById   *linkQueries.GetByIdQueryHandler
 }

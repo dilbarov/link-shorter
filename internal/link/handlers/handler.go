@@ -7,7 +7,7 @@ import (
 	linkResponses "link-shorter/internal/link/responses"
 	linkServices "link-shorter/internal/link/services"
 	linkCommands "link-shorter/internal/link/services/commands"
-	"link-shorter/internal/link/services/queries"
+	linkQueries "link-shorter/internal/link/services/queries"
 	"link-shorter/pkg/req"
 	"link-shorter/pkg/res"
 	"net/http"
@@ -41,7 +41,7 @@ func (handler *Handler) GoTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		hash := r.PathValue("hash")
 
-		query := queries.GetByHashQuery{
+		query := linkQueries.GetByHashQuery{
 			Params: &linkPayloads.GetByHashParams{
 				Hash: hash,
 			},
@@ -72,7 +72,7 @@ func (handler *Handler) getById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 
-		query := queries.GetByIdQuery{
+		query := linkQueries.GetByIdQuery{
 			Params: &linkPayloads.GetByIDParams{
 				Id: id,
 			},

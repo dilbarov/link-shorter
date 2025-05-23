@@ -1,4 +1,4 @@
-package queries
+package link
 
 import (
 	linkModels "link-shorter/internal/link/models"
