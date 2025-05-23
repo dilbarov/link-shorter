@@ -20,6 +20,9 @@ func NewServiceFacade(repo linkRepository.Repository) *ServiceFacade {
 			Update: &linkCommands.UpdateCommandHandler{
 				LinkRepository: repo,
 			},
+			Delete: &linkCommands.DeleteCommandHandler{
+				LinkRepository: repo,
+			},
 		},
 		Queries: &QueryBus{
 			GetByHash: &queries.GetByHashQueryHandler{

@@ -15,7 +15,7 @@ type GetByIdQueryHandler struct {
 }
 
 func (h *GetByIdQueryHandler) Execute(query GetByIdQuery) (*linkModels.Model, error) {
-	link, err := h.LinkRepository.GetById(query.Params.ID)
+	link, err := h.LinkRepository.GetById(query.Params.Id)
 
 	if err != nil {
 		return nil, err

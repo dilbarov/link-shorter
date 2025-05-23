@@ -28,7 +28,7 @@ func (repo *PostgresLinkRepository) GetByHash(hash string) (*linkModels.Model, e
 
 func (repo *PostgresLinkRepository) GetById(id string) (*linkModels.Model, error) {
 	var link linkModels.Model
-	result := repo.Database.DB.First(&link, "id = ? ", id)
+	result := repo.Database.DB.First(&link, "id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -59,6 +59,7 @@ func (repo *PostgresLinkRepository) Update(link *linkModels.Model) (*linkModels.
 
 func (repo *PostgresLinkRepository) Delete(id string) error {
 	link, err := repo.GetById(id)
+
 	if err != nil {
 		return err
 	}

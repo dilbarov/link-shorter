@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"github.com/google/uuid"
 	"link-shorter/configs"
 	linkModels "link-shorter/internal/link/models"
 	linkPayloads "link-shorter/internal/link/payloads"
@@ -75,7 +74,7 @@ func (handler *Handler) getById() http.HandlerFunc {
 
 		query := queries.GetByIdQuery{
 			Params: &linkPayloads.GetByIDParams{
-				ID: id,
+				Id: id,
 			},
 		}
 
@@ -116,9 +115,9 @@ func (handler *Handler) Create() http.HandlerFunc {
 
 func (handler *Handler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
+		id, err := req.ExtractUUID(r, "id")
 
-		if _, err := uuid.Parse(id); err != nil {
+		if err != nil {
 			http.Error(w, "Invalid UUID", http.StatusBadRequest)
 			return
 		}
@@ -132,7 +131,7 @@ func (handler *Handler) Update() http.HandlerFunc {
 
 		cmd := linkCommands.UpdateCommand{
 			Payload: &linkPayloads.UpdatePayload{
-				Id:   id,
+				Id:   *id,
 				Url:  payload.Url,
 				Hash: payload.Hash,
 			},
@@ -151,10 +150,25 @@ func (handler *Handler) Update() http.HandlerFunc {
 
 func (handler *Handler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := req.ExtractUUID(r, "id")
+		if err != nil {
+			http.Error(w, "Invalid UUID", http.StatusBadRequest)
+			return
+		}
 
-		res.Json(w, &linkModels.Model{
-			Url:  "",
-			Hash: "",
-		}, http.StatusOK)
+		cmd := linkCommands.DeleteCommand{
+			Payload: &linkPayloads.GetByIDParams{
+				Id: *id,
+			},
+		}
+
+		err = handler.LinkService.Commands.Delete.Execute(cmd)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	}
 }

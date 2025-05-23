@@ -7,4 +7,5 @@ import (
 type CommandBus struct {
 	Create *commands.CreateCommandHandler
 	Update *commands.UpdateCommandHandler
+	Delete *commands.DeleteCommandHandler
 }

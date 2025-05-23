@@ -5,7 +5,7 @@ type GetByHashParams struct {
 }
 
 type GetByIDParams struct {
-	ID string
+	Id string
 }
 
 type CreatePayload struct {
