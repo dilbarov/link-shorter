@@ -16,6 +16,13 @@ type CreateCommandHandler struct {
 
 func (h *CreateCommandHandler) Execute(cmd CreateCommand) (*linkModels.Model, error) {
 	link := linkModels.NewLink(cmd.Payload.Url)
+	for {
+		existsLink, _ := h.LinkRepository.GetByHash(link.Hash)
+		if existsLink == nil {
+			break
+		}
+		link.GenerateHash()
+	}
 	createdLink, err := h.LinkRepository.Create(link)
 	if err != nil {
 		return nil, err

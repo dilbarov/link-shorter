@@ -12,10 +12,13 @@ type Model struct {
 }
 
 func NewLink(url string) *Model {
-	return &Model{
-		Url:  url,
-		Hash: RandomStringRunes(10),
-	}
+	link := &Model{Url: url}
+	link.GenerateHash()
+	return link
+}
+
+func (link *Model) GenerateHash() {
+	link.Hash = RandomStringRunes(10)
 }
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMOPQRSTUVWXYZ")
