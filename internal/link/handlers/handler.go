@@ -7,6 +7,7 @@ import (
 	linkServices "link-shorter/internal/link/services"
 	linkCommands "link-shorter/internal/link/services/commands"
 	linkQueries "link-shorter/internal/link/services/queries"
+	"link-shorter/pkg/middleware"
 	"link-shorter/pkg/req"
 	"link-shorter/pkg/res"
 	"net/http"
@@ -31,7 +32,7 @@ func NewLinkHandler(router *http.ServeMux, deps HandlerDeps) {
 	router.HandleFunc("GET /links", handler.getAll())
 	router.HandleFunc("GET /links/{id}", handler.getById())
 	router.HandleFunc("POST /links", handler.Create())
-	router.HandleFunc("PATCH /links/{id}", handler.Update())
+	router.Handle("PATCH /links/{id}", middleware.IsAuthed(handler.Update()))
 	router.HandleFunc("DELETE /links/{id}", handler.Delete())
 	router.HandleFunc("GET /r/{hash}", handler.GoTo())
 }

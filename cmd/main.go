@@ -42,7 +42,7 @@ func main() {
 
 	// Middlewares
 	loggingMiddleware := middleware.NewLoggingMiddleware(log.Logger)
-	stack := middleware.Chain(middleware.CORS, loggingMiddleware, middleware.IsAuthed)
+	stack := middleware.Chain(middleware.CORS, loggingMiddleware)
 
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.App.Port),
