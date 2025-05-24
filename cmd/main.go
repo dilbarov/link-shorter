@@ -11,6 +11,7 @@ import (
 	linkServices "link-shorter/internal/link/services"
 	"link-shorter/pkg/db"
 	"link-shorter/pkg/logger"
+	"link-shorter/pkg/middleware"
 	"net/http"
 )
 
@@ -41,7 +42,7 @@ func main() {
 
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.App.Port),
-		Handler: router,
+		Handler: middleware.Logging(router, log.Logger),
 	}
 
 	log.Info().Msgf("Starting server on port %d", conf.App.Port)
