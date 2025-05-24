@@ -16,3 +16,9 @@ func Logging(next http.Handler, logger zerolog.Logger) http.Handler {
 		logger.Info().Msgf("%d %s %s | %dms", wrapper.StatusCode, r.Method, r.URL.Path, time.Since(start).Milliseconds())
 	})
 }
+
+func NewLoggingMiddleware(logger zerolog.Logger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return Logging(next, logger)
+	}
+}

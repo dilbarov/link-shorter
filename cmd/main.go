@@ -40,9 +40,13 @@ func main() {
 		LinkService: linkService,
 	})
 
+	// Middlewares
+	loggingMiddleware := middleware.NewLoggingMiddleware(log.Logger)
+	stack := middleware.Chain(middleware.CORS, loggingMiddleware)
+
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.App.Port),
-		Handler: middleware.CORS(middleware.Logging(router, log.Logger)),
+		Handler: stack(router),
 	}
 
 	log.Info().Msgf("Starting server on port %d", conf.App.Port)
