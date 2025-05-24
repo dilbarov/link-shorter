@@ -31,6 +31,9 @@ func NewServiceFacade(repo linkRepository.Repository) *ServiceFacade {
 			GetById: &linkQueries.GetByIdQueryHandler{
 				LinkRepository: repo,
 			},
+			GetAll: &linkQueries.GetAllQueryHandler{
+				LinkRepository: repo,
+			},
 		},
 	}
 }

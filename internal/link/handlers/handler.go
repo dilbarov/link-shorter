@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"link-shorter/configs"
-	linkModels "link-shorter/internal/link/models"
 	linkPayloads "link-shorter/internal/link/payloads"
 	linkResponses "link-shorter/internal/link/responses"
 	linkServices "link-shorter/internal/link/services"
@@ -29,12 +28,12 @@ func NewLinkHandler(router *http.ServeMux, deps HandlerDeps) {
 		LinkService: deps.LinkService,
 	}
 
-	router.HandleFunc("GET /link/", handler.getAll())
-	router.HandleFunc("GET /link/{id}", handler.getById())
-	router.HandleFunc("POST /link", handler.Create())
-	router.HandleFunc("PATCH /link/{id}", handler.Update())
-	router.HandleFunc("DELETE /link/{id}", handler.Delete())
-	router.HandleFunc("GET /{hash}", handler.GoTo())
+	router.HandleFunc("GET /links", handler.getAll())
+	router.HandleFunc("GET /links/{id}", handler.getById())
+	router.HandleFunc("POST /links", handler.Create())
+	router.HandleFunc("PATCH /links/{id}", handler.Update())
+	router.HandleFunc("DELETE /links/{id}", handler.Delete())
+	router.HandleFunc("GET /r/{hash}", handler.GoTo())
 }
 
 func (handler *Handler) GoTo() http.HandlerFunc {
@@ -60,11 +59,25 @@ func (handler *Handler) GoTo() http.HandlerFunc {
 
 func (handler *Handler) getAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		filter := linkPayloads.GetAllParams{}
+		err := req.ParseQuery(r, &filter)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-		res.Json(w, &linkModels.Model{
-			Url:  "",
-			Hash: "",
-		}, http.StatusOK)
+		query := linkQueries.GetAllQuery{
+			Params: &filter,
+		}
+
+		links, count, err := handler.LinkService.Queries.GetAll.Execute(query)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Json(w, linkResponses.NewPublicLinkList(links, &count), http.StatusOK)
 	}
 }
 
@@ -85,7 +98,7 @@ func (handler *Handler) getById() http.HandlerFunc {
 			return
 		}
 
-		res.Json(w, linkResponses.NewPublicResponse(result), http.StatusOK)
+		res.Json(w, linkResponses.NewPublicLink(result), http.StatusOK)
 	}
 }
 
@@ -109,13 +122,13 @@ func (handler *Handler) Create() http.HandlerFunc {
 			return
 		}
 
-		res.Json(w, linkResponses.NewPublicResponse(result), http.StatusCreated)
+		res.Json(w, linkResponses.NewPublicLink(result), http.StatusCreated)
 	}
 }
 
 func (handler *Handler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := req.ExtractUUID(r, "id")
+		id, err := req.ParseUUID(r, "id")
 
 		if err != nil {
 			http.Error(w, "Invalid UUID", http.StatusBadRequest)
@@ -144,13 +157,13 @@ func (handler *Handler) Update() http.HandlerFunc {
 			return
 		}
 
-		res.Json(w, linkResponses.NewPublicResponse(result), http.StatusOK)
+		res.Json(w, linkResponses.NewPublicLink(result), http.StatusOK)
 	}
 }
 
 func (handler *Handler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := req.ExtractUUID(r, "id")
+		id, err := req.ParseUUID(r, "id")
 		if err != nil {
 			http.Error(w, "Invalid UUID", http.StatusBadRequest)
 			return

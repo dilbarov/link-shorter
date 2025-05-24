@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type Response struct {
+type PublicLink struct {
 	Id        uuid.UUID `json:"id"`
 	Url       string    `json:"url"`
 	Hash      string    `json:"hash"`
@@ -15,14 +15,14 @@ type Response struct {
 	DeletedAt *string   `json:"deletedAt"`
 }
 
-func NewPublicResponse(m *linkModels.Model) *Response {
+func NewPublicLink(m *linkModels.Model) *PublicLink {
 	var deletedAt *string
 	if m.DeletedAt.Valid {
 		s := m.DeletedAt.Time.Format(time.RFC3339)
 		deletedAt = &s
 	}
 
-	return &Response{
+	return &PublicLink{
 		Id:        m.Id,
 		Url:       m.Url,
 		Hash:      m.Hash,

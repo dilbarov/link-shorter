@@ -8,6 +8,12 @@ type GetByIDParams struct {
 	Id string
 }
 
+type GetAllParams struct {
+	Limit  *int    `schema:"limit,default:10"`
+	Offset *int    `schema:"offset,default:0"`
+	Search *string `schema:"search"`
+}
+
 type CreatePayload struct {
 	Url string `json:"url" validate:"required,url"`
 }
