@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func ExtractUUID(req *http.Request, field string) (*string, error) {
+func ParseUUID(req *http.Request, field string) (*string, error) {
 	id := req.PathValue(field)
 
 	if _, err := uuid.Parse(id); err != nil {
