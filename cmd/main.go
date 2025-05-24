@@ -42,7 +42,7 @@ func main() {
 
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.App.Port),
-		Handler: middleware.Logging(router, log.Logger),
+		Handler: middleware.CORS(middleware.Logging(router, log.Logger)),
 	}
 
 	log.Info().Msgf("Starting server on port %d", conf.App.Port)

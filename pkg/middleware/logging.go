@@ -13,6 +13,6 @@ func Logging(next http.Handler, logger zerolog.Logger) http.Handler {
 
 		next.ServeHTTP(wrapper, r)
 
-		logger.Info().Msgf("%d %s %s | %s", wrapper.StatusCode, r.Method, r.URL.Path, time.Since(start).String())
+		logger.Info().Msgf("%d %s %s | %dms", wrapper.StatusCode, r.Method, r.URL.Path, time.Since(start).Milliseconds())
 	})
 }
