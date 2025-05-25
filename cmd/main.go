@@ -6,9 +6,12 @@ import (
 	"github.com/rs/zerolog/log"
 	"link-shorter/configs"
 	"link-shorter/internal/auth"
-	"link-shorter/internal/link/handlers"
+	linkHandlers "link-shorter/internal/link/handlers"
 	linkRepository "link-shorter/internal/link/repository"
 	linkServices "link-shorter/internal/link/services"
+	userHandlers "link-shorter/internal/user/handlers"
+	userRepository "link-shorter/internal/user/repository"
+	userServices "link-shorter/internal/user/services"
 	"link-shorter/pkg/db"
 	"link-shorter/pkg/logger"
 	"link-shorter/pkg/middleware"
@@ -26,18 +29,25 @@ func main() {
 
 	// Repositories
 	linkRepo := linkRepository.NewPostgresLinkRepository(database)
+	userRepo := userRepository.NewPostgresUserRepository(database)
 
 	// Services
 	linkService := linkServices.NewServiceFacade(linkRepo)
+	userService := userServices.NewServiceFacade(userRepo)
 
 	// Handler
 	auth.NewHandler(router, auth.HandlerDeps{
 		Config: conf,
 	})
 
-	handlers.NewLinkHandler(router, handlers.HandlerDeps{
+	linkHandlers.NewLinkHandler(router, linkHandlers.LinkHandlerDeps{
 		Config:      conf,
 		LinkService: linkService,
+	})
+
+	userHandlers.NewUserHandler(router, userHandlers.UserHandlerDeps{
+		Config:      conf,
+		UserService: userService,
 	})
 
 	// Middlewares
