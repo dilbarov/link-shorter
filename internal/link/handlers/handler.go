@@ -13,31 +13,31 @@ import (
 	"net/http"
 )
 
-type HandlerDeps struct {
+type LinkHandlerDeps struct {
 	*configs.Config
 	LinkService *linkServices.ServiceFacade
 }
 
-type Handler struct {
+type LinkHandler struct {
 	*configs.Config
 	LinkService *linkServices.ServiceFacade
 }
 
-func NewLinkHandler(router *http.ServeMux, deps HandlerDeps) {
-	handler := &Handler{
+func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
+	handler := &LinkHandler{
 		Config:      deps.Config,
 		LinkService: deps.LinkService,
 	}
 
 	router.HandleFunc("GET /links", handler.getAll())
 	router.HandleFunc("GET /links/{id}", handler.getById())
-	router.HandleFunc("POST /links", handler.Create())
-	router.Handle("PATCH /links/{id}", middleware.IsAuthed(handler.Update()))
-	router.HandleFunc("DELETE /links/{id}", handler.Delete())
-	router.HandleFunc("GET /r/{hash}", handler.GoTo())
+	router.HandleFunc("POST /links", handler.create())
+	router.Handle("PATCH /links/{id}", middleware.IsAuthed(handler.update()))
+	router.HandleFunc("DELETE /links/{id}", handler.delete())
+	router.HandleFunc("GET /r/{hash}", handler.goTo())
 }
 
-func (handler *Handler) GoTo() http.HandlerFunc {
+func (handler *LinkHandler) goTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		hash := r.PathValue("hash")
 
@@ -58,7 +58,7 @@ func (handler *Handler) GoTo() http.HandlerFunc {
 	}
 }
 
-func (handler *Handler) getAll() http.HandlerFunc {
+func (handler *LinkHandler) getAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		filter := linkPayloads.GetAllParams{}
 		err := req.ParseQuery(r, &filter)
@@ -82,13 +82,18 @@ func (handler *Handler) getAll() http.HandlerFunc {
 	}
 }
 
-func (handler *Handler) getById() http.HandlerFunc {
+func (handler *LinkHandler) getById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
+		id, err := req.ParseUUID(r, "id")
+
+		if err != nil {
+			http.Error(w, "Invalid UUID", http.StatusBadRequest)
+			return
+		}
 
 		query := linkQueries.GetByIdQuery{
 			Params: &linkPayloads.GetByIDParams{
-				Id: id,
+				Id: *id,
 			},
 		}
 
@@ -103,7 +108,7 @@ func (handler *Handler) getById() http.HandlerFunc {
 	}
 }
 
-func (handler *Handler) Create() http.HandlerFunc {
+func (handler *LinkHandler) create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, err := req.HandleBody[linkPayloads.CreatePayload](r.Body)
 
@@ -127,7 +132,7 @@ func (handler *Handler) Create() http.HandlerFunc {
 	}
 }
 
-func (handler *Handler) Update() http.HandlerFunc {
+func (handler *LinkHandler) update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := req.ParseUUID(r, "id")
 
@@ -162,7 +167,7 @@ func (handler *Handler) Update() http.HandlerFunc {
 	}
 }
 
-func (handler *Handler) Delete() http.HandlerFunc {
+func (handler *LinkHandler) delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := req.ParseUUID(r, "id")
 		if err != nil {

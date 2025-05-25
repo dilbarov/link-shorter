@@ -7,8 +7,8 @@ import (
 
 type Model struct {
 	base.Model
-	Url  string `json:"url"`
-	Hash string `json:"hash" gorm:"uniqueIndex"`
+	Url  string
+	Hash string `gorm:"uniqueIndex"`
 }
 
 func (*Model) TableName() string {

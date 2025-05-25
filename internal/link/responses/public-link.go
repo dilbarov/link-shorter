@@ -1,18 +1,15 @@
 package link
 
 import (
-	"github.com/google/uuid"
 	linkModels "link-shorter/internal/link/models"
+	"link-shorter/pkg/base"
 	"time"
 )
 
 type PublicLink struct {
-	Id        uuid.UUID `json:"id"`
-	Url       string    `json:"url"`
-	Hash      string    `json:"hash"`
-	CreatedAt string    `json:"createdAt"`
-	UpdatedAt string    `json:"updatedAt"`
-	DeletedAt *string   `json:"deletedAt"`
+	base.PublicResponse
+	Url  string `json:"url"`
+	Hash string `json:"hash"`
 }
 
 func NewPublicLink(m *linkModels.Model) *PublicLink {
@@ -23,11 +20,13 @@ func NewPublicLink(m *linkModels.Model) *PublicLink {
 	}
 
 	return &PublicLink{
-		Id:        m.Id,
-		Url:       m.Url,
-		Hash:      m.Hash,
-		CreatedAt: m.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: m.UpdatedAt.Format(time.RFC3339),
-		DeletedAt: deletedAt,
+		PublicResponse: base.PublicResponse{
+			Id:        m.Id,
+			CreatedAt: m.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: m.UpdatedAt.Format(time.RFC3339),
+			DeletedAt: deletedAt,
+		},
+		Url:  m.Url,
+		Hash: m.Hash,
 	}
 }

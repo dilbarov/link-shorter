@@ -15,10 +15,5 @@ type DeleteCommandHandler struct {
 
 func (h *DeleteCommandHandler) Execute(cmd DeleteCommand) error {
 	err := h.LinkRepository.Delete(cmd.Payload.Id)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
