@@ -1,4 +1,4 @@
-package handlers
+package user
 
 import (
 	"link-shorter/configs"
@@ -12,18 +12,18 @@ import (
 	"net/http"
 )
 
-type UserHandlerDeps struct {
+type HandlerDeps struct {
 	*configs.Config
 	UserService *userServices.ServiceFacade
 }
 
-type UserHandler struct {
+type Handler struct {
 	*configs.Config
 	UserService *userServices.ServiceFacade
 }
 
-func NewUserHandler(router *http.ServeMux, deps UserHandlerDeps) {
-	handler := &UserHandler{
+func NewUserHandler(router *http.ServeMux, deps HandlerDeps) {
+	handler := &Handler{
 		Config:      deps.Config,
 		UserService: deps.UserService,
 	}
@@ -35,7 +35,7 @@ func NewUserHandler(router *http.ServeMux, deps UserHandlerDeps) {
 	router.HandleFunc("DELETE /users/{id}", handler.delete())
 }
 
-func (handler *UserHandler) getById() http.HandlerFunc {
+func (handler *Handler) getById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := req.ParseUUID(r, "id")
 
@@ -61,7 +61,7 @@ func (handler *UserHandler) getById() http.HandlerFunc {
 	}
 }
 
-func (handler *UserHandler) getAll() http.HandlerFunc {
+func (handler *Handler) getAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		filter := userPayloads.GetAllParams{}
 		err := req.ParseQuery(r, &filter)
@@ -85,7 +85,7 @@ func (handler *UserHandler) getAll() http.HandlerFunc {
 	}
 }
 
-func (handler *UserHandler) create() http.HandlerFunc {
+func (handler *Handler) create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, err := req.HandleBody[userPayloads.CreatePayload](r.Body)
 
@@ -109,7 +109,7 @@ func (handler *UserHandler) create() http.HandlerFunc {
 	}
 }
 
-func (handler *UserHandler) update() http.HandlerFunc {
+func (handler *Handler) update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := req.ParseUUID(r, "id")
 		if err != nil {
@@ -140,7 +140,7 @@ func (handler *UserHandler) update() http.HandlerFunc {
 	}
 }
 
-func (handler *UserHandler) delete() http.HandlerFunc {
+func (handler *Handler) delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := req.ParseUUID(r, "id")
 		if err != nil {

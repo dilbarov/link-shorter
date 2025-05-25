@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	userErrors "link-shorter/internal/user/errors"
 	userModels "link-shorter/internal/user/models"
 	userPayloads "link-shorter/internal/user/payloads"
 	userRepository "link-shorter/internal/user/repository"
@@ -21,7 +22,7 @@ func (h *CreateCommandHandler) Execute(cmd CreateCommand) (*userModels.Model, er
 	existsUser, err := h.UserRepository.GetByEmail(user.Email)
 
 	if existsUser != nil {
-		return nil, errors.New("user already exists")
+		return nil, errors.New(userErrors.ErrUserExists)
 	}
 
 	createdUser, err := h.UserRepository.Create(user)
