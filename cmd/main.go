@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"link-shorter/configs"
-	"link-shorter/internal/auth"
+	authHandlers "link-shorter/internal/auth/handlers"
+	authServices "link-shorter/internal/auth/services"
 	linkHandlers "link-shorter/internal/link/handlers"
 	linkRepository "link-shorter/internal/link/repository"
 	linkServices "link-shorter/internal/link/services"
@@ -34,18 +35,20 @@ func main() {
 	// Services
 	linkService := linkServices.NewServiceFacade(linkRepo)
 	userService := userServices.NewServiceFacade(userRepo)
+	authService := authServices.NewAuthService(userRepo)
 
 	// Handler
-	auth.NewHandler(router, auth.HandlerDeps{
-		Config: conf,
+	authHandlers.NewHandler(router, authHandlers.HandlerDeps{
+		Config:      conf,
+		AuthService: authService,
 	})
 
-	linkHandlers.NewLinkHandler(router, linkHandlers.LinkHandlerDeps{
+	linkHandlers.NewLinkHandler(router, linkHandlers.HandlerDeps{
 		Config:      conf,
 		LinkService: linkService,
 	})
 
-	userHandlers.NewUserHandler(router, userHandlers.UserHandlerDeps{
+	userHandlers.NewUserHandler(router, userHandlers.HandlerDeps{
 		Config:      conf,
 		UserService: userService,
 	})
