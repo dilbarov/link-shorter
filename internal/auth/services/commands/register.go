@@ -7,6 +7,7 @@ import (
 	authPayloads "link-shorter/internal/auth/payloads"
 	userModels "link-shorter/internal/user/models"
 	userRepository "link-shorter/internal/user/repository"
+	"link-shorter/pkg/jwt"
 )
 
 type RegisterCommand struct {
@@ -15,6 +16,7 @@ type RegisterCommand struct {
 
 type RegisterCommandHandler struct {
 	UserRepository userRepository.Repository
+	JwtService     *jwt.Service
 }
 
 func (h *RegisterCommandHandler) Execute(cmd RegisterCommand) (string, error) {
@@ -22,10 +24,6 @@ func (h *RegisterCommandHandler) Execute(cmd RegisterCommand) (string, error) {
 
 	if existsUser != nil {
 		return "", errors.New(authErrors.ErrEmailInUse)
-	}
-
-	if cmd.Payload.Password != "" {
-
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(cmd.Payload.Password), bcrypt.DefaultCost)
@@ -42,11 +40,17 @@ func (h *RegisterCommandHandler) Execute(cmd RegisterCommand) (string, error) {
 		Name:         &cmd.Payload.Name,
 	}
 
-	_, err = h.UserRepository.Create(user)
+	createdUser, err := h.UserRepository.Create(user)
 
 	if err != nil {
 		return "", err
 	}
 
-	return user.Email, nil
+	token, err := h.JwtService.Create(createdUser.Id.String(), createdUser.Email)
+
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

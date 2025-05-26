@@ -14,6 +14,7 @@ import (
 	userRepository "link-shorter/internal/user/repository"
 	userServices "link-shorter/internal/user/services"
 	"link-shorter/pkg/db"
+	"link-shorter/pkg/jwt"
 	"link-shorter/pkg/logger"
 	"link-shorter/pkg/middleware"
 	"net/http"
@@ -35,7 +36,8 @@ func main() {
 	// Services
 	linkService := linkServices.NewServiceFacade(linkRepo)
 	userService := userServices.NewServiceFacade(userRepo)
-	authService := authServices.NewAuthService(userRepo)
+	jwtService := jwt.NewJWTService(conf.Auth.Secret)
+	authService := authServices.NewAuthService(userRepo, jwtService)
 
 	// Handler
 	authHandlers.NewHandler(router, authHandlers.HandlerDeps{

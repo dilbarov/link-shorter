@@ -6,6 +6,7 @@ import (
 	authErrors "link-shorter/internal/auth/errors"
 	authPayloads "link-shorter/internal/auth/payloads"
 	userRepository "link-shorter/internal/user/repository"
+	"link-shorter/pkg/jwt"
 )
 
 type LoginCommand struct {
@@ -14,6 +15,7 @@ type LoginCommand struct {
 
 type LoginCommandHandler struct {
 	UserRepository userRepository.Repository
+	JwtService     *jwt.Service
 }
 
 func (h *LoginCommandHandler) Execute(cmd LoginCommand) (string, error) {
@@ -32,5 +34,11 @@ func (h *LoginCommandHandler) Execute(cmd LoginCommand) (string, error) {
 		return "", errors.New(authErrors.ErrWrongCredentials)
 	}
 
-	return "", nil
+	token, err := h.JwtService.Create(existsUser.Id.String(), existsUser.Email)
+
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
