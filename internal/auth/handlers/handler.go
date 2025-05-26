@@ -62,7 +62,8 @@ func (h *Handler) Register() http.HandlerFunc {
 		token, err := h.AuthService.Commands.Register.Execute(cmd)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
 		res.Json(w, &authPayloads.RegisterResponse{

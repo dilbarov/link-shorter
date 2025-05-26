@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	authErrors "link-shorter/internal/auth/errors"
 	authPayloads "link-shorter/internal/auth/payloads"
 	userModels "link-shorter/internal/user/models"
@@ -23,13 +24,21 @@ func (h *RegisterCommandHandler) Execute(cmd RegisterCommand) (string, error) {
 		return "", errors.New(authErrors.ErrEmailInUse)
 	}
 
+	if cmd.Payload.Password != "" {
+
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(cmd.Payload.Password), bcrypt.DefaultCost)
+
 	if err != nil {
 		return "", err
 	}
 
+	passwordHash := string(hashedPassword)
+
 	user := &userModels.Model{
 		Email:        cmd.Payload.Email,
-		PasswordHash: nil,
+		PasswordHash: &passwordHash,
 		Name:         &cmd.Payload.Name,
 	}
 
