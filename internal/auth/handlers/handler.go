@@ -31,15 +31,26 @@ func NewHandler(router *http.ServeMux, deps HandlerDeps) {
 
 func (h *Handler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := req.HandleBody[authPayloads.LoginRequest](r.Body)
+		payload, err := req.HandleBody[authPayloads.LoginRequest](r.Body)
 
 		if err != nil {
 			res.Json(w, err.Error(), 400)
 			return
 		}
 
+		cmd := authCommands.LoginCommand{Payload: authPayloads.LoginRequest{
+			Email:    payload.Email,
+			Password: payload.Password,
+		}}
+
+		token, err := h.AuthService.Commands.Login.Execute(cmd)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+		}
+
 		res.Json(w, &authPayloads.LoginResponse{
-			Token: "123",
+			Token: token,
 		}, 200)
 	}
 }
