@@ -2,23 +2,28 @@ package jwt
 
 import "github.com/golang-jwt/jwt/v5"
 
+type Data struct {
+	Sub   string
+	Email string
+}
+
 type Service struct {
-	secret string
+	Secret string
 }
 
 func NewJWTService(secret string) *Service {
 	return &Service{
-		secret: secret,
+		Secret: secret,
 	}
 }
 
-func (j *Service) Create(id string, email string) (string, error) {
+func (j *Service) Create(data Data) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":   id,
-		"email": email,
+		"sub":   data.Sub,
+		"email": data.Email,
 	})
 
-	s, err := token.SignedString([]byte(j.secret))
+	s, err := token.SignedString([]byte(j.Secret))
 
 	if err != nil {
 		return "", err
@@ -27,6 +32,20 @@ func (j *Service) Create(id string, email string) (string, error) {
 	return s, nil
 }
 
-//func (j *Service) Validate(token string) bool {
-//
-//}
+func (j *Service) Parse(token string) (bool, *Data) {
+	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		return []byte(j.Secret), nil
+	})
+
+	if err != nil {
+		return false, nil
+	}
+
+	id := t.Claims.(jwt.MapClaims)["sub"].(string)
+	email := t.Claims.(jwt.MapClaims)["email"].(string)
+
+	return true, &Data{
+		Sub:   id,
+		Email: email,
+	}
+}

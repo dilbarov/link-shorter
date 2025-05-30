@@ -46,7 +46,10 @@ func (h *RegisterCommandHandler) Execute(cmd RegisterCommand) (string, error) {
 		return "", err
 	}
 
-	token, err := h.JwtService.Create(createdUser.Id.String(), createdUser.Email)
+	token, err := h.JwtService.Create(jwt.Data{
+		Sub:   createdUser.Id.String(),
+		Email: createdUser.Email,
+	})
 
 	if err != nil {
 		return "", err

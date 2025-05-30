@@ -1,12 +1,14 @@
 package link
 
 import (
+	"github.com/rs/zerolog/log"
 	"link-shorter/configs"
 	linkPayloads "link-shorter/internal/link/payloads"
 	linkResponses "link-shorter/internal/link/responses"
 	linkServices "link-shorter/internal/link/services"
 	linkCommands "link-shorter/internal/link/services/commands"
 	linkQueries "link-shorter/internal/link/services/queries"
+	"link-shorter/pkg/jwt"
 	"link-shorter/pkg/middleware"
 	"link-shorter/pkg/req"
 	"link-shorter/pkg/res"
@@ -32,7 +34,7 @@ func NewLinkHandler(router *http.ServeMux, deps HandlerDeps) {
 	router.HandleFunc("GET /links", handler.getAll())
 	router.HandleFunc("GET /links/{id}", handler.getById())
 	router.HandleFunc("POST /links", handler.create())
-	router.Handle("PATCH /links/{id}", middleware.IsAuthed(handler.update()))
+	router.Handle("PATCH /links/{id}", middleware.IsAuthed(handler.update(), &deps.Config.Auth))
 	router.HandleFunc("DELETE /links/{id}", handler.delete())
 	router.HandleFunc("GET /r/{hash}", handler.goTo())
 }
@@ -134,6 +136,11 @@ func (handler *Handler) create() http.HandlerFunc {
 
 func (handler *Handler) update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		user := r.Context().Value(middleware.ContextUserKey).(*jwt.Data)
+
+		log.Debug().Msgf("%v", user.Email)
+
 		id, err := req.ParseUUID(r, "id")
 
 		if err != nil {

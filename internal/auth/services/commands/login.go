@@ -34,7 +34,10 @@ func (h *LoginCommandHandler) Execute(cmd LoginCommand) (string, error) {
 		return "", errors.New(authErrors.ErrWrongCredentials)
 	}
 
-	token, err := h.JwtService.Create(existsUser.Id.String(), existsUser.Email)
+	token, err := h.JwtService.Create(jwt.Data{
+		Sub:   existsUser.Id.String(),
+		Email: existsUser.Email,
+	})
 
 	if err != nil {
 		return "", err
