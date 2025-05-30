@@ -39,35 +39,19 @@ func (repo *PostgresLinkRepository) GetById(id string) (*linkModels.Model, error
 }
 
 func (repo *PostgresLinkRepository) GetAll(query *linkPayloads.GetAllParams) ([]*linkModels.Model, int, error) {
-	var (
-		links []*linkModels.Model
-		total int64
-	)
-
 	dbQuery := repo.Database.Model(&linkModels.Model{})
 
 	if query.Search != nil && *query.Search != "" {
 		searchPattern := "%" + *query.Search + "%"
-		dbQuery = dbQuery.Where("url ILIKE ? OR hash ILIKE ?", searchPattern, searchPattern)
+		dbQuery = dbQuery.Where("url ILIKE ? OR hash ILIKE ? and deleted_at IS NULL", searchPattern, searchPattern)
 	}
 
-	if err := dbQuery.Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
+	items, total, err := db.FindAndCount[linkModels.Model](dbQuery, db.CommonFilter{
+		Limit:  *query.Limit,
+		Offset: *query.Offset,
+	})
 
-	if *query.Limit > 0 {
-		dbQuery = dbQuery.Limit(*query.Limit)
-	}
-
-	if *query.Offset > 0 {
-		dbQuery = dbQuery.Offset(*query.Offset)
-	}
-
-	if err := dbQuery.Find(&links).Error; err != nil {
-		return nil, 0, err
-	}
-
-	return links, int(total), nil
+	return items, int(total), err
 }
 
 func (repo *PostgresLinkRepository) Create(link *linkModels.Model) (*linkModels.Model, error) {
