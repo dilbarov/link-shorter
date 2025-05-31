@@ -1,14 +1,16 @@
 package link
 
 import (
+	stat "link-shorter/internal/stat/models"
 	"link-shorter/pkg/base"
 	"math/rand"
 )
 
 type Model struct {
 	base.Model
-	Url  string
-	Hash string `gorm:"uniqueIndex"`
+	Url   string
+	Hash  string       `gorm:"uniqueIndex"`
+	Stats []stat.Model `gorm:"constraint:OnUpdate:CASCADE,OnDelete:Set NULL;foreignKey:LinkId;references:Id"`
 }
 
 func (*Model) TableName() string {

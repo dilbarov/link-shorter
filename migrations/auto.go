@@ -5,6 +5,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"link-shorter/configs"
 	linkModels "link-shorter/internal/link/models"
+	statModels "link-shorter/internal/stat/models"
 	userModels "link-shorter/internal/user/models"
 	"link-shorter/pkg/db"
 	"link-shorter/pkg/logger"
@@ -23,7 +24,7 @@ func main() {
 		Dsn: os.Getenv("DSN"),
 	})
 
-	err = dbManager.AutoMigrate(&linkModels.Model{}, &userModels.Model{})
+	err = dbManager.AutoMigrate(&linkModels.Model{}, &userModels.Model{}, statModels.Model{})
 	if err != nil {
 		return
 	}
