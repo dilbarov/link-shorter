@@ -8,6 +8,7 @@ import (
 	linkServices "link-shorter/internal/link/services"
 	linkCommands "link-shorter/internal/link/services/commands"
 	linkQueries "link-shorter/internal/link/services/queries"
+	cqrsInterfaces "link-shorter/pkg/cqrs/interfaces"
 	"link-shorter/pkg/jwt"
 	"link-shorter/pkg/middleware"
 	"link-shorter/pkg/req"
@@ -18,17 +19,20 @@ import (
 type HandlerDeps struct {
 	*configs.Config
 	LinkService *linkServices.ServiceFacade
+	EventBus    cqrsInterfaces.EventBus
 }
 
 type Handler struct {
 	*configs.Config
 	LinkService *linkServices.ServiceFacade
+	EventBus    cqrsInterfaces.EventBus
 }
 
 func NewLinkHandler(router *http.ServeMux, deps HandlerDeps) {
 	handler := &Handler{
 		Config:      deps.Config,
 		LinkService: deps.LinkService,
+		EventBus:    deps.EventBus,
 	}
 
 	router.HandleFunc("GET /links", handler.getAll())
@@ -41,6 +45,7 @@ func NewLinkHandler(router *http.ServeMux, deps HandlerDeps) {
 
 func (handler *Handler) goTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		hash := r.PathValue("hash")
 
 		query := linkQueries.GetByHashQuery{
@@ -49,11 +54,18 @@ func (handler *Handler) goTo() http.HandlerFunc {
 			},
 		}
 
-		result, err := handler.LinkService.Queries.GetByHash.Execute(query)
+		result, err := handler.LinkService.Queries.GetByHash(ctx, query)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
+		}
+
+		//err = handler.ClickRepository.Create(result.Id.String())
+		//handler.EventBus.Publish()
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
 		http.Redirect(w, r, result.Url, http.StatusTemporaryRedirect)
@@ -62,6 +74,7 @@ func (handler *Handler) goTo() http.HandlerFunc {
 
 func (handler *Handler) getAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		filter := linkPayloads.GetAllParams{}
 		err := req.ParseQuery(r, &filter)
 		if err != nil {
@@ -73,19 +86,20 @@ func (handler *Handler) getAll() http.HandlerFunc {
 			Params: &filter,
 		}
 
-		links, count, err := handler.LinkService.Queries.GetAll.Execute(query)
+		result, err := handler.LinkService.Queries.GetAll(ctx, query)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		res.Json(w, linkResponses.NewPublicLinkList(links, &count), http.StatusOK)
+		res.Json(w, linkResponses.NewPublicLinkList(result.Items, &result.Count), http.StatusOK)
 	}
 }
 
 func (handler *Handler) getById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		id, err := req.ParseUUID(r, "id")
 
 		if err != nil {
@@ -99,7 +113,7 @@ func (handler *Handler) getById() http.HandlerFunc {
 			},
 		}
 
-		result, err := handler.LinkService.Queries.GetById.Execute(query)
+		result, err := handler.LinkService.Queries.GetById(ctx, query)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -112,6 +126,7 @@ func (handler *Handler) getById() http.HandlerFunc {
 
 func (handler *Handler) create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		payload, err := req.HandleBody[linkPayloads.CreatePayload](r.Body)
 
 		if err != nil {
@@ -123,7 +138,7 @@ func (handler *Handler) create() http.HandlerFunc {
 			Payload: payload,
 		}
 
-		result, err := handler.LinkService.Commands.Create.Execute(cmd)
+		result, err := handler.LinkService.Commands.Create(ctx, cmd)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -136,8 +151,9 @@ func (handler *Handler) create() http.HandlerFunc {
 
 func (handler *Handler) update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 
-		user := r.Context().Value(middleware.ContextUserKey).(*jwt.Data)
+		user := ctx.Value(middleware.ContextUserKey).(*jwt.Data)
 
 		log.Debug().Msgf("%v", user.Email)
 
@@ -163,7 +179,7 @@ func (handler *Handler) update() http.HandlerFunc {
 			},
 		}
 
-		result, err := handler.LinkService.Commands.Update.Execute(cmd)
+		result, err := handler.LinkService.Commands.Update(ctx, cmd)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -176,6 +192,7 @@ func (handler *Handler) update() http.HandlerFunc {
 
 func (handler *Handler) delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		id, err := req.ParseUUID(r, "id")
 		if err != nil {
 			http.Error(w, "Invalid UUID", http.StatusBadRequest)
@@ -188,10 +205,10 @@ func (handler *Handler) delete() http.HandlerFunc {
 			},
 		}
 
-		err = handler.LinkService.Commands.Delete.Execute(cmd)
+		_, err = handler.LinkService.Commands.Delete(ctx, cmd)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
