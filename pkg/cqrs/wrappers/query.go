@@ -34,6 +34,10 @@ func ExecuteQuery[Q cqrsInterfaces.Query[R], R any](bus cqrsInterfaces.QueryBus,
 
 // RegisterQueryHandler - wrapper for QueryBus.Register
 // queryZeroVal is used to get reflect.Type
-func RegisterQueryHandler[Q cqrsInterfaces.Query[R], R any](bus cqrsInterfaces.QueryBus, queryZeroVal Q, handler cqrsInterfaces.QueryHandler[Q, R]) error {
-	return bus.Register(queryZeroVal, handler)
+func RegisterQueryHandler[Q cqrsInterfaces.Query[R], R any](bus cqrsInterfaces.QueryBus, queryZeroVal Q, handler cqrsInterfaces.QueryHandler[Q, R]) {
+	err := bus.Register(queryZeroVal, handler)
+
+	if err != nil {
+		panic(err)
+	}
 }

@@ -45,7 +45,11 @@ func ExecuteCommand[C cqrsInterfaces.Command[R], R any](bus cqrsInterfaces.Comma
 
 // RegisterCommandHandler - wrapper for CommandBus.Register
 // commandZeroVal is used to get reflect.Type
-func RegisterCommandHandler[C cqrsInterfaces.Command[R], R any](bus cqrsInterfaces.CommandBus, commandZeroVal C, handler cqrsInterfaces.CommandHandler[C, R]) error {
+func RegisterCommandHandler[C cqrsInterfaces.Command[R], R any](bus cqrsInterfaces.CommandBus, commandZeroVal C, handler cqrsInterfaces.CommandHandler[C, R]) {
 	// We pass commandZeroVal, the bus implementation itself will take reflect.Type from it if necessary.
-	return bus.Register(commandZeroVal, handler)
+	err := bus.Register(commandZeroVal, handler)
+
+	if err != nil {
+		panic(err)
+	}
 }
