@@ -3,7 +3,6 @@ package cqrs
 import (
 	"context"
 	"fmt"
-	cqrsInterfaces "link-shorter/pkg/cqrs/interfaces"
 	"link-shorter/pkg/utils"
 	"reflect"
 	"sync"
@@ -31,10 +30,10 @@ func (b *InMemoryEventBus) Subscribe(eventTypeOrZeroVal any, handlerAsAny any) e
 	return nil
 }
 
-func (b *InMemoryEventBus) Publish(ctx context.Context, event cqrsInterfaces.Event) []error {
+func (b *InMemoryEventBus) Publish(ctx context.Context, eventAsAny any) []error {
 	b.mu.RLock()
 
-	eventType := utils.TypeOfValue(event)
+	eventType := utils.TypeOfValue(eventAsAny)
 
 	specificEventHandlers, ok := b.handlers[eventType]
 	if !ok || len(specificEventHandlers) == 0 {
@@ -53,7 +52,7 @@ func (b *InMemoryEventBus) Publish(ctx context.Context, event cqrsInterfaces.Eve
 	// so that sending to the channel does not block handler goroutines if `Publish`
 	// does not read from it fast enough (although in this case we read everything at once).
 	errChan := make(chan error, len(handlersToCall))
-	eventValue := reflect.ValueOf(event)
+	eventValue := reflect.ValueOf(eventAsAny)
 
 	for _, handlerInterface := range handlersToCall {
 		wg.Add(1)
@@ -63,7 +62,7 @@ func (b *InMemoryEventBus) Publish(ctx context.Context, event cqrsInterfaces.Eve
 			defer func() {
 				if panicValue := recover(); panicValue != nil {
 					// Sending a panic error to the error channel
-					errChan <- fmt.Errorf("panic in event eventHandler %T for event %T: %v", eventHandler, event, panicValue)
+					errChan <- fmt.Errorf("panic in event eventHandler %T for event %T: %v", eventHandler, eventAsAny, panicValue)
 				}
 			}()
 
@@ -71,7 +70,7 @@ func (b *InMemoryEventBus) Publish(ctx context.Context, event cqrsInterfaces.Eve
 			method := handlerValue.MethodByName("Handle")
 
 			if !method.IsValid() {
-				errChan <- fmt.Errorf("eventHandler %T for event %T does not have a valid Handle method", eventHandler, event)
+				errChan <- fmt.Errorf("eventHandler %T for event %T does not have a valid Handle method", eventHandler, eventAsAny)
 				return
 			}
 
@@ -84,16 +83,16 @@ func (b *InMemoryEventBus) Publish(ctx context.Context, event cqrsInterfaces.Eve
 			results := method.Call(args) // Expecting (error)
 
 			if len(results) != 1 {
-				errChan <- fmt.Errorf("event eventHandler %T Handle method for event %T returned %d values, expected 1 (error)", eventHandler, event, len(results))
+				errChan <- fmt.Errorf("event eventHandler %T Handle method for event %T returned %d values, expected 1 (error)", eventHandler, eventAsAny, len(results))
 				return
 			}
 
 			errVal := results[0].Interface()
 			if errVal != nil {
 				if err, ok := errVal.(error); ok {
-					errChan <- fmt.Errorf("error from eventHandler %T for event %T: %w", eventHandler, event, err)
+					errChan <- fmt.Errorf("error from eventHandler %T for event %T: %w", eventHandler, eventAsAny, err)
 				} else {
-					errChan <- fmt.Errorf("event eventHandler %T for event %T returned non-error type for error value: %T", eventHandler, event, errVal)
+					errChan <- fmt.Errorf("event eventHandler %T for event %T returned non-error type for error value: %T", eventHandler, eventAsAny, errVal)
 				}
 			}
 			// If there is no error, we do not send anything to errChan
