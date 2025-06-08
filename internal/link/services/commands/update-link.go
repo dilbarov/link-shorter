@@ -21,8 +21,8 @@ type UpdateCommandHandler struct {
 	LinkRepository linkRepository.Repository
 }
 
-func NewUpdateCommandHandler(repo linkRepository.Repository) *UpdateCommandHandler {
-	return &UpdateCommandHandler{LinkRepository: repo}
+func NewUpdateCommandHandler(linkRepository linkRepository.Repository) *UpdateCommandHandler {
+	return &UpdateCommandHandler{LinkRepository: linkRepository}
 }
 
 func (h *UpdateCommandHandler) Handle(ctx context.Context, cmd UpdateCommand) (*linkModels.Model, error) {
