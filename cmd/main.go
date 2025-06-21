@@ -5,17 +5,11 @@ import (
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"link-shorter/configs"
-	authHandlers "link-shorter/internal/auth/handlers"
-	authServices "link-shorter/internal/auth/services"
-	clickRepository "link-shorter/internal/click/repository"
-	clickServices "link-shorter/internal/click/services"
-	linkHandlers "link-shorter/internal/link/handlers"
-	linkRepository "link-shorter/internal/link/repository"
-	linkServices "link-shorter/internal/link/services"
-	userHandlers "link-shorter/internal/user/handlers"
-	userRepository "link-shorter/internal/user/repository"
-	userServices "link-shorter/internal/user/services"
-	inMemoryProvider "link-shorter/pkg/cqrs/providers/in-memory"
+	"link-shorter/internal/auth"
+	"link-shorter/internal/click"
+	"link-shorter/internal/link"
+	"link-shorter/internal/user"
+	"link-shorter/pkg/cqrs"
 	"link-shorter/pkg/db"
 	"link-shorter/pkg/jwt"
 	"link-shorter/pkg/logger"
@@ -28,42 +22,37 @@ func main() {
 	log.Logger = logger.SetupLogger(conf.App.Env)
 	database := db.NewDb(&conf.Db)
 	router := http.NewServeMux()
-	commandBus, queryBus, eventBus := inMemoryProvider.InitInMemory()
+	eventBus := cqrs.NewInMemoryEventBus()
 
 	// Repositories
-	linkRepo := linkRepository.NewPostgresLinkRepository(database)
-	userRepo := userRepository.NewPostgresUserRepository(database)
-	clickRepo := clickRepository.NewPostgresClickRepository(database)
+	linkRepo := link.NewPostgresLinkRepository(database)
+	userRepo := user.NewPostgresUserRepository(database)
+	clickRepo := click.NewPostgresClickRepository(database)
 
 	// Services
-	userService := userServices.NewServiceFacade(userRepo)
+	userService := user.NewServiceFacade(userRepo)
 	jwtService := jwt.NewJWTService(conf.Auth.Secret)
-	authService := authServices.NewAuthService(userRepo, jwtService)
-	linkService := linkServices.NewServiceFacade(linkServices.ServiceFacadeDeps{
-		CommandBus:     commandBus,
-		QueryBus:       queryBus,
-		EventBus:       eventBus,
+	authService := auth.NewAuthService(userRepo, jwtService)
+	linkService := link.NewServiceFacade(link.ServiceFacadeDeps{
 		LinkRepository: linkRepo,
 	})
-	_ = clickServices.NewServiceFacade(clickServices.ServiceFacadeDeps{
-		CommandBus:      commandBus,
-		QueryBus:        queryBus,
+	_ = click.NewServiceFacade(click.ServiceFacadeDeps{
 		EventBus:        eventBus,
 		ClickRepository: clickRepo,
 	})
 
 	// Handlers
-	authHandlers.NewHandler(router, authHandlers.HandlerDeps{
+	auth.NewHandler(router, auth.HandlerDeps{
 		Config:      conf,
 		AuthService: authService,
 	})
 
-	linkHandlers.NewLinkHandler(router, linkHandlers.HandlerDeps{
+	link.NewLinkHandler(router, link.HandlerDeps{
 		Config:      conf,
 		LinkService: linkService,
 	})
 
-	userHandlers.NewUserHandler(router, userHandlers.HandlerDeps{
+	user.NewUserHandler(router, user.HandlerDeps{
 		Config:      conf,
 		UserService: userService,
 	})
